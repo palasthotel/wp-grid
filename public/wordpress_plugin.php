@@ -3,7 +3,7 @@
  * Plugin Name: Grid
  * Plugin URI: https://github.com/palasthotel/grid-wordpress
  * Description: Helps layouting pages with containerist.
- * Version: 2.3.1
+ * Version: 2.3.2
  * Author: Palasthotel <rezeption@palasthotel.de> (in person: Benjamin Birkenhake, Edward Bock, Enno Welbers, Jana Marie Eggebrecht)
  * Author URI: http://www.palasthotel.de
  * Text Domain: grid
@@ -124,7 +124,8 @@ class Plugin extends Component\Plugin {
 		$this->gridAPI      = new API($this->gridCore, $this->gridAjax, $this->gridTemplate);
 		$this->gridEditor   = new Editor(
 			$this->gridCore->storage,
-			$this->url."/lib/grid/"
+			$this->url."/lib/grid/",
+			$this->gridHook
 		);
 
 		/**
@@ -197,10 +198,22 @@ class Plugin extends Component\Plugin {
 		add_action( 'admin_head-options-reading.php', 'grid_modify_front_pages_dropdown' );
 		add_action( 'pre_get_posts', 'grid_enable_front_page_landing_page' );
 
+		add_action( 'grid_grid_editor_styles_get',array($this,'styles_nonce'));
+		add_action( 'grid_styles_editor_post', array($this,'styles_checknonce'));
 		// ------------------------------------
 		// uninstall
 		// ------------------------------------
 		register_uninstall_hook( __FILE__, array( __CLASS__, 'uninstall' ) );
+	}
+
+	public function styles_checknonce($data) {
+		if(!isset($data['_wpnonce']) || ! wp_verify_nonce($data['_wpnonce'])) {
+			die("invalid nonce.");
+		}
+	}
+
+	public function styles_nonce() {
+		echo wp_nonce_field();
 	}
 
 	public function loadGridPaths(iTemplate $template){
