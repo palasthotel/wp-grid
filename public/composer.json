@@ -1,5 +1,6 @@
 {
 	"name": "palasthotel/grid-wordpress",
+	"license": "GPL-3.0-or-later",
 	"description": "Grid plugin for wordpress",
 	"autoload": {
 		"classmap": [
