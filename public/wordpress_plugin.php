@@ -11,7 +11,8 @@
  *
  * Requires at least: 4.0
  * Tested up to: 5.9.3
- * License: http://www.gnu.org/licenses/gpl-2.0.html GPLv2
+ * License: GPL-3.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
  * @copyright Copyright (c) 2022, Palasthotel
  * @package Palasthotel\Grid\WordPress
