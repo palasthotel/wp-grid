@@ -80,7 +80,7 @@ class TheGrid extends _Component {
 		/**
 		 * look for grid id
 		 */
-		$rows = $wpdb->get_results( 'select grid_id from '.$wpdb->prefix."grid_nodes where nid=$postid" );
+		$rows = $wpdb->get_results( $wpdb->prepare( 'select grid_id from '.$wpdb->prefix.'grid_nodes where nid=%d', $postid ) );
 		
 		if ( 0 == count( $rows ) ) {
 			$storage = $this->plugin->gridCore->storage;
@@ -179,7 +179,76 @@ class TheGrid extends _Component {
 		die();
 	}
 
+	const AJAX_NONCE_ACTION = 'grid_ajax';
+
+	/**
+	 * Endpoint methods that read site-wide settings and take no grid id.
+	 */
+	const AJAX_METHODS_WITHOUT_GRID = array( 'getContainerStyles', 'getSlotStyles', 'getBoxStyles', 'Rights' );
+
+	/**
+	 * The editor's requests carry this nonce in the X-Grid-Nonce header, see
+	 * Plugin::enqueue_editor_files().
+	 *
+	 * @return string
+	 */
+	public static function create_ajax_nonce() {
+		return wp_create_nonce( self::AJAX_NONCE_ACTION );
+	}
+
+	private function ajax_deny( $message ) {
+		status_header( 403 );
+		header( 'Content-Type: application/json; charset=UTF-8' );
+		echo wp_json_encode( array( 'error' => $message ) );
+		die();
+	}
+
+	/**
+	 * A post's grid may only be changed by someone who may edit the post. Reusable
+	 * boxes and containers ("box:<id>", "container:<id>") stay open to edit_posts,
+	 * like their admin screens.
+	 *
+	 * @param string $method
+	 * @param array $params
+	 *
+	 * @return bool
+	 */
+	private function current_user_can_call( $method, $params ) {
+		// PHP method names are case-insensitive, and the editor calls getcontainerStyles
+		if ( in_array( strtolower( $method ), array_map( 'strtolower', self::AJAX_METHODS_WITHOUT_GRID ), true ) ) {
+			return true;
+		}
+		$grid_id = $params[0] ?? null;
+		if ( ! is_scalar( $grid_id ) ) {
+			return false;
+		}
+		$grid_id = (string) $grid_id;
+		if ( preg_match( '/^(box|container):\d+$/', $grid_id ) === 1 ) {
+			return true;
+		}
+		if ( preg_match( '/^\d+$/', $grid_id ) !== 1 ) {
+			return false;
+		}
+		$post_id = $this->plugin->get_postid_by_grid( intval( $grid_id ) );
+		if ( false === $post_id ) {
+			return current_user_can( 'edit_others_posts' );
+		}
+		return current_user_can( 'edit_post', intval( $post_id ) );
+	}
+
 	function ajax() {
+		$nonce = isset( $_SERVER['HTTP_X_GRID_NONCE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_GRID_NONCE'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, self::AJAX_NONCE_ACTION ) ) {
+			$this->ajax_deny( 'invalid nonce' );
+		}
+
+		$json   = json_decode( file_get_contents( 'php://input' ) );
+		$method = is_object( $json ) && isset( $json->method ) && is_string( $json->method ) ? $json->method : '';
+		$params = is_object( $json ) && isset( $json->params ) && is_array( $json->params ) ? array_values( $json->params ) : array();
+		if ( ! $this->current_user_can_call( $method, $params ) ) {
+			$this->ajax_deny( 'not allowed' );
+		}
+
 		$this->plugin->gridAPI->handleAjaxCall();
 		die();
 	}

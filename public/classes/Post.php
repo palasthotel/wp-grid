@@ -60,7 +60,7 @@ class Post extends _Component
 	 */
 	function post_has_grid($post_id){
 		global $wpdb;
-		$count = $wpdb->get_var( 'select count(grid_id) from '.$wpdb->prefix."grid_nodes where nid=$post_id" );
+		$count = $wpdb->get_var( $wpdb->prepare( 'select count(grid_id) from '.$wpdb->prefix.'grid_nodes where nid=%d', intval( $post_id ) ) );
 		return( $count > 0 );
 	}
 
@@ -102,7 +102,7 @@ class Post extends _Component
 			/**
 			 * look for grid id
 			 */
-			$rows = $wpdb->get_results( 'select grid_id from '.$wpdb->prefix."grid_nodes where nid=$postid" );
+			$rows = $wpdb->get_results( $wpdb->prepare( 'select grid_id from '.$wpdb->prefix.'grid_nodes where nid=%d', intval( $postid ) ) );
 			if ( $wpdb->num_rows > 0 ) {
 				$grid_id = $rows[0]->grid_id;
 				$grid = null;

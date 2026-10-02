@@ -348,7 +348,7 @@ class Plugin extends Component\Plugin {
 	function get_postid_by_grid( $gridid, $force_reload = false ) {
 		global $wpdb;
 		if(!$force_reload && isset($this->post_ids[$gridid])) return $this->post_ids[$gridid];
-		$rows = $wpdb->get_results( 'select nid from ' . $wpdb->prefix . 'grid_nodes where grid_id=' . $gridid );
+		$rows = $wpdb->get_results( $wpdb->prepare( 'select nid from ' . $wpdb->prefix . 'grid_nodes where grid_id=%d', intval( $gridid ) ) );
 		if ( count( $rows ) > 0 ) {
 			$this->post_ids[$gridid] =  $rows[0]->nid;
 			return $this->post_ids[$gridid];
@@ -369,7 +369,7 @@ class Plugin extends Component\Plugin {
 	function get_grid_by_postid( $postid, $force_reload = false ) {
 		global $wpdb;
 		if(!$force_reload && isset($this->grid_ids[$postid])) return $this->grid_ids[$postid];
-		$rows = $wpdb->get_results( 'select grid_id from ' . $wpdb->prefix . "grid_nodes where nid=$postid" );
+		$rows = $wpdb->get_results( $wpdb->prepare( 'select grid_id from ' . $wpdb->prefix . 'grid_nodes where nid=%d', intval( $postid ) ) );
 		if ( count( $rows ) > 0 ) {
 			$this->grid_ids[$postid] = $rows[0]->grid_id;
 			return $this->grid_ids[$postid];
@@ -433,6 +433,15 @@ class Plugin extends Component\Plugin {
 			plugins_url( 'grid-wordpress.js', __FILE__ ),
 			["jquery", "jquery-ui-draggable", "jquery-ui-sortable", "jquery-ui-droppable", 'media-upload'],
 			filemtime(plugin_dir_path(__FILE__)."/grid-wordpress.js")
+		);
+		// the editor talks to admin.php?page=grid_ajax through jQuery.ajax - sign those requests
+		wp_add_inline_script(
+			"grid_wordpress_js",
+			sprintf(
+				'jQuery.ajaxPrefilter(function(options, original, xhr){ if(options.url && options.url.indexOf("page=grid_ajax") !== -1){ xhr.setRequestHeader("X-Grid-Nonce", %s); } });',
+				wp_json_encode( TheGrid::create_ajax_nonce() )
+			),
+			'before'
 		);
 
 		/**
