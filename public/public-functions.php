@@ -74,6 +74,136 @@ function grid_wp_load($post){
 }
 
 /**
+ * The delete link of a reusable box or container. It carries a nonce, so the
+ * list can delete right after a confirmation dialog.
+ *
+ * @param string $page  admin page that deletes
+ * @param string $param query parameter with the id
+ * @param int $id
+ *
+ * @return string
+ */
+function grid_wp_reuse_delete_url( $page, $param, $id ) {
+	return wp_nonce_url(
+		add_query_arg( array( 'page' => $page, $param => $id ), admin_url( 'admin.php' ) ),
+		$page . '_' . intval( $id )
+	);
+}
+
+/**
+ * Marks the library's delete links in a list of reusable boxes or containers as
+ * destructive and gives them the element's title for the confirmation dialog.
+ *
+ * @param string $html   the library's list
+ * @param string $page   admin page that deletes
+ * @param string $param  query parameter with the id
+ * @param string[] $titles titles by id
+ *
+ * @return string
+ */
+function grid_wp_mark_reuse_delete_links( $html, $page, $param, $titles ) {
+	return preg_replace_callback(
+		'/<a\b([^>]*)>/',
+		function ( $match ) use ( $page, $param, $titles ) {
+			$attributes = $match[1];
+			if ( ! preg_match( '/\bhref=(["\'])(.*?)\1/', $attributes, $href ) ) {
+				return $match[0];
+			}
+			$query = array();
+			wp_parse_str( (string) wp_parse_url( html_entity_decode( $href[2] ), PHP_URL_QUERY ), $query );
+			if ( ! isset( $query['page'] ) || $query['page'] !== $page ) {
+				return $match[0];
+			}
+			if ( preg_match( '/\bclass=(["\'])(.*?)\1/', $attributes, $class ) ) {
+				$attributes = str_replace( $class[0], 'class="' . esc_attr( trim( $class[2] . ' button-link-delete' ) ) . '"', $attributes );
+			} else {
+				$attributes .= ' class="button-link-delete"';
+			}
+			$id = isset( $query[ $param ] ) ? intval( $query[ $param ] ) : -1;
+			if ( ! empty( $titles[ $id ] ) ) {
+				$attributes .= ' data-grid-title="' . esc_attr( $titles[ $id ] ) . '"';
+			}
+			return '<a' . $attributes . '>';
+		},
+		$html
+	);
+}
+
+/**
+ * Asks before deleting from the list of reusable boxes or containers and then
+ * posts the deletion; without JavaScript the link opens the confirmation page.
+ *
+ * @param string $page  admin page that deletes
+ * @param string $param query parameter with the id
+ * @param string $message            question without a title
+ * @param string $message_with_title question with %s for the element's title
+ */
+function grid_wp_print_reuse_delete_dialog( $page, $param, $message, $message_with_title ) {
+	$config = wp_json_encode( array( 'page' => $page, 'param' => $param, 'message' => $message, 'messageWithTitle' => $message_with_title ) );
+	wp_print_inline_script_tag( <<<JS
+(function (config) {
+	document.addEventListener('click', function (event) {
+		var link = event.target.closest('a[href*="page=' + config.page + '&"], a[href*="page=' + config.page + '&amp;"]');
+		if (!link) {
+			return;
+		}
+		event.preventDefault();
+		var title = link.getAttribute('data-grid-title');
+		if (!window.confirm(title ? config.messageWithTitle.replace('%s', title) : config.message)) {
+			return;
+		}
+		var url = new URL(link.href);
+		var form = document.createElement('form');
+		form.method = 'post';
+		form.action = link.href;
+		[['grid_delete_id', url.searchParams.get(config.param)], ['_wpnonce', url.searchParams.get('_wpnonce')]].forEach(function (field) {
+			var input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = field[0];
+			input.value = field[1];
+			form.appendChild(input);
+		});
+		document.body.appendChild(form);
+		form.submit();
+	});
+})($config);
+JS
+	);
+}
+
+/**
+ * The confirmation page for deleting a reusable box or container, inside the
+ * admin layout: the library's form gets a nonce, a WordPress button and a way back.
+ *
+ * @param string $html  the library's confirmation form
+ * @param string $title
+ * @param string $page  admin page that deletes
+ * @param int $id
+ * @param string $list_url
+ * @param string $element_title title of the box or container, if it has one
+ */
+function grid_wp_render_reuse_delete_page( $html, $title, $page, $id, $list_url, $element_title = '' ) {
+	$html = str_replace(
+		array( 'class="form-submit"', '</form>' ),
+		array(
+			'class="button button-primary"',
+			wp_nonce_field( $page . '_' . intval( $id ), '_wpnonce', true, false ) .
+			' <a class="button" href="' . esc_url( $list_url ) . '">' . esc_html__( 'Cancel', 'grid' ) . '</a></form>',
+		),
+		$html
+	);
+	echo '<div class="wrap"><h1>' . esc_html( $title ) . '</h1>';
+	if ( '' !== $element_title ) {
+		/* translators: %s: title of the reusable box or container */
+		echo '<p>' . esc_html( sprintf( __( '"%s" will be deleted for good.', 'grid' ), $element_title ) ) . '</p>';
+	} else {
+		echo '<p>' . esc_html__( 'This deletes it for good.', 'grid' ) . '</p>';
+	}
+	echo $html;
+	echo '</div>';
+}
+
+/**
  * Whether the front end may show a box's error, e.g. a deleted box or an
  * unsupported viewmode: while debugging, or to someone who may edit the grid's
  * post and so fix it. Everybody else gets nothing.

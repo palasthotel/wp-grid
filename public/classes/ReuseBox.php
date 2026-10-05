@@ -17,18 +17,30 @@ class ReuseBox extends _Component
 	function admin_menu(){
 		add_submenu_page( 'grid_settings', 'Reusable boxes', 'Reusable boxes', 'edit_posts', 'grid_reuse_boxes', array( $this, 'render_reuse_boxes' ) );
 		grid_wp_add_hidden_page( 'edit reuse box', 'edit reuse box', 'edit_posts', 'grid_edit_reuse_box', array( $this, 'edit_reuse_box' ) );
-		grid_wp_add_hidden_page( 'delete reuse box', 'delete reuse box', 'edit_posts', 'grid_delete_reuse_box', array( $this, 'delete_reuse_box' ) );
+		$hook = grid_wp_add_hidden_page( 'Delete reusable box', 'Delete reusable box', 'edit_posts', 'grid_delete_reuse_box', array( $this, 'delete_reuse_box' ) );
+		if ( $hook ) {
+			add_action( 'load-' . $hook, array( $this, 'handle_delete_reuse_box' ) );
+		}
 	}
 
 	function render_reuse_boxes() {
 		$editor = $this->plugin->gridEditor->getReuseBoxEditor();
 		grid_enqueue_editor_files($editor);
+		$titles = array();
 		$html = $editor->run( function( $id ) {
 			return add_query_arg( array( 'page' => 'grid_edit_reuse_box', 'boxid' => $id ), admin_url( 'admin.php' ) );
-		}, function( $id ) {
-			return add_query_arg( array( 'noheader' => true, 'page' => 'grid_delete_reuse_box', 'boxid' => $id ), admin_url( 'admin.php' ) );
+		}, function( $id ) use ( &$titles ) {
+			$titles[ $id ] = $this->reuse_title( $id );
+			return grid_wp_reuse_delete_url( 'grid_delete_reuse_box', 'boxid', $id );
 		});
-		echo $html;
+		echo grid_wp_mark_reuse_delete_links( $html, 'grid_delete_reuse_box', 'boxid', $titles );
+		grid_wp_print_reuse_delete_dialog(
+			'grid_delete_reuse_box',
+			'boxid',
+			__( 'Delete this reusable box for good?', 'grid' ),
+			/* translators: %s: title of the reusable box */
+			__( 'Delete the reusable box "%s" for good?', 'grid' )
+		);
 	}
 
 	function edit_reuse_box() {
@@ -46,24 +58,43 @@ class ReuseBox extends _Component
 		echo $html;
 	}
 
-	function delete_reuse_box() {
+	private function list_url() {
+		return add_query_arg( array( 'page' => 'grid_reuse_boxes' ), admin_url( 'admin.php' ) );
+	}
+
+	/**
+	 * Deletes before the admin page starts its output, so it can still redirect
+	 * or answer with a status.
+	 */
+	function handle_delete_reuse_box() {
 		$boxid   = isset( $_GET['boxid'] ) ? intval( $_GET['boxid'] ) : -1;
 		$storage = $this->plugin->gridCore->storage;
-		$action  = 'grid_delete_reuse_box_' . $boxid;
-		if ( ! empty( $_POST ) ) {
-			check_admin_referer( $action );
-		}
 		if ( in_array( (string) $boxid, array_map( 'strval', $storage->getReusedBoxIds() ), true ) ) {
 			wp_die( esc_html__( 'This box is still in use.', 'grid' ), '', array( 'response' => 409, 'back_link' => true ) );
 		}
-		$editor = $this->plugin->gridEditor->getReuseBoxEditor();
-		grid_enqueue_editor_files($editor);
-		$html = $editor->runDelete( $storage, $boxid );
-		if ( true === $html ) {
-			wp_safe_redirect( add_query_arg( array( 'page' => 'grid_reuse_boxes' ), admin_url( 'admin.php' ) ) );
+		if ( empty( $_POST ) ) {
+			return;
+		}
+		check_admin_referer( 'grid_delete_reuse_box_' . $boxid );
+		if ( true === $this->plugin->gridEditor->getReuseBoxEditor()->runDelete( $storage, $boxid ) ) {
+			wp_safe_redirect( $this->list_url() );
 			exit;
 		}
-		// the library's confirmation form has no nonce
-		echo str_replace( '</form>', wp_nonce_field( $action, '_wpnonce', true, false ) . '</form>', $html );
+	}
+
+	function delete_reuse_box() {
+		$boxid = isset( $_GET['boxid'] ) ? intval( $_GET['boxid'] ) : -1;
+		$html  = $this->plugin->gridEditor->getReuseBoxEditor()->runDelete( $this->plugin->gridCore->storage, $boxid );
+		grid_wp_render_reuse_delete_page( $html, __( 'Delete reusable box', 'grid' ), 'grid_delete_reuse_box', $boxid, $this->list_url(), $this->reuse_title( $boxid ) );
+	}
+
+	/**
+	 * @param int $id
+	 *
+	 * @return string the reusable box's title, empty if it has none
+	 */
+	private function reuse_title( $id ) {
+		$element = $this->plugin->gridCore->storage->loadReuseBox( $id );
+		return isset( $element->reusetitle ) ? (string) $element->reusetitle : '';
 	}
 }
