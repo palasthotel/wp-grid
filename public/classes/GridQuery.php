@@ -23,36 +23,55 @@ class GridQuery extends AbstractQuery {
 	}
 
 	/**
-	 * @var mysqli
+	 * @var mysqli|null
 	 */
-	var $connection;
+	public $connection = null;
 
 	/**
+	 * true if the connection is our own and not the one of $wpdb
+	 * @var bool
+	 */
+	private bool $own_connection = false;
+
+	/**
+	 * The grid library works with mysqli results, so it uses the mysqli connection of
+	 * $wpdb: same charset (utf8mb4), host, port, socket and SSL settings as WordPress.
+	 * Only a db drop-in without a mysqli connection gets a connection of its own.
+	 *
 	 * @return mysqli
 	 */
-	private function getConnection(){
-		if($this->connection != null) return $this->connection;
-		$host = DB_HOST;
-		$port = 3306;
-		if ( strpos( DB_HOST, ':' ) !== false ) {
-			$db_host = explode( ':', DB_HOST );
-			$host    = $db_host[0];
-			$port    = intval( $db_host[1] );
+	public function getConnection() {
+		if ( $this->connection instanceof mysqli ) {
+			return $this->connection;
 		}
-		$connection = new mysqli( $host, DB_USER, DB_PASSWORD, DB_NAME, $port );
-		$connection->set_charset("utf8");
+		global $wpdb;
+		$wpdb->check_connection( false );
+		if ( $wpdb->dbh instanceof mysqli ) {
+			$this->connection = $wpdb->dbh;
+			return $this->connection;
+		}
+
+		$host_data = $wpdb->parse_db_host( DB_HOST );
+		list( $host, $port, $socket, $is_ipv6 ) = $host_data ? $host_data : array( DB_HOST, null, null, false );
+		if ( $is_ipv6 && extension_loaded( 'mysqlnd' ) ) {
+			$host = "[$host]";
+		}
+		$connection = mysqli_init();
+		$connection->real_connect( $host, DB_USER, DB_PASSWORD, DB_NAME, $port ? intval( $port ) : null, $socket, defined( 'MYSQL_CLIENT_FLAGS' ) ? MYSQL_CLIENT_FLAGS : 0 );
 		if ( $connection->connect_errno ) {
 			error_log( "WP Grid: " . $connection->connect_error, 4 );
 			wp_die( "WP Grid could not connect to database." );
 		}
-		$this->connection = $connection;
+		$connection->set_charset( $wpdb->charset ? $wpdb->charset : 'utf8mb4' );
+		$this->connection     = $connection;
+		$this->own_connection = true;
 		return $connection;
 	}
 
 	/**
 	 * @param string $sql
 	 *
-	 * @return mysqli_result
+	 * @return mysqli_result|bool
 	 */
 	public function execute( $sql ) {
 		return $this->getConnection()->query($sql);
@@ -71,6 +90,9 @@ class GridQuery extends AbstractQuery {
 	 * on object destruction
 	 */
 	public function __destruct(){
-		if($this->connection) $this->connection->close();
+		// never close the connection of $wpdb
+		if ( $this->own_connection && $this->connection ) {
+			$this->connection->close();
+		}
 	}
 }

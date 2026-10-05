@@ -130,7 +130,7 @@ function grid_wp_load_js() {
  * @return mysqli
  */
 function grid_wp_get_mysqli() {
-	return grid_plugin()->gridQuery->connection;
+	return grid_plugin()->gridQuery->getConnection();
 }
 
 
