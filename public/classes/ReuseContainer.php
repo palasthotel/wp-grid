@@ -17,7 +17,10 @@ class ReuseContainer extends _Component
 	function admin_menu(){
 		add_submenu_page( 'grid_settings', 'reusable container', 'Reusable container', 'edit_posts', 'grid_reuse_containers', array( $this, 'reuse_containers' ) );
 		grid_wp_add_hidden_page( 'edit reuse container', 'edit reuse container', 'edit_posts', 'grid_edit_reuse_container', array( $this, 'edit_reuse_container' ) );
-		grid_wp_add_hidden_page( 'delete reuse container', 'delete reuse container', 'edit_posts', 'grid_delete_reuse_container', array( $this, 'delete_reuse_container') );
+		$hook = grid_wp_add_hidden_page( 'Delete reusable container', 'Delete reusable container', 'edit_posts', 'grid_delete_reuse_container', array( $this, 'delete_reuse_container' ) );
+		if ( $hook ) {
+			add_action( 'load-' . $hook, array( $this, 'handle_delete_reuse_container' ) );
+		}
 	}
 	function reuse_containers() {
 		$storage = $this->plugin->gridCore->storage;
@@ -27,9 +30,10 @@ class ReuseContainer extends _Component
 		$html = $editor->run( $storage, function( $id ) {
 			return add_query_arg( array( 'page' => 'grid_edit_reuse_container', 'containerid' => $id ), admin_url( 'admin.php' ) );
 		}, function( $id ) {
-			return add_query_arg( array( 'page' => 'grid_delete_reuse_container', 'containerid' => $id, 'noheader' => true ), admin_url( 'admin.php' ) );
+			return grid_wp_reuse_delete_url( 'grid_delete_reuse_container', 'containerid', $id );
 		} );
 		echo $html;
+		grid_wp_print_reuse_delete_dialog( 'grid_delete_reuse_container', 'containerid', __( 'Delete this reusable container for good?', 'grid' ) );
 	}
 	function edit_reuse_container() {
 		$containerid = intval($_GET['containerid']);
@@ -47,24 +51,33 @@ class ReuseContainer extends _Component
 		echo $html;
 	}
 
-	function delete_reuse_container() {
+	private function list_url() {
+		return add_query_arg( array( 'page' => 'grid_reuse_containers' ), admin_url( 'admin.php' ) );
+	}
+
+	/**
+	 * Deletes before the admin page starts its output, so it can still redirect
+	 * or answer with a status.
+	 */
+	function handle_delete_reuse_container() {
 		$containerid = isset( $_GET['containerid'] ) ? intval( $_GET['containerid'] ) : -1;
 		$storage     = $this->plugin->gridCore->storage;
-		$action      = 'grid_delete_reuse_container_' . $containerid;
-		if ( ! empty( $_POST ) ) {
-			check_admin_referer( $action );
-		}
 		if ( in_array( (string) $containerid, array_map( 'strval', $storage->getReusedContainerIds() ), true ) ) {
 			wp_die( esc_html__( 'This container is still in use.', 'grid' ), '', array( 'response' => 409, 'back_link' => true ) );
 		}
-		$editor = $this->plugin->gridEditor->getReuseContainerEditor();
-		grid_enqueue_editor_files( $editor );
-		$html = $editor->runDelete( $storage, $containerid );
-		if ( true === $html ) {
-			wp_safe_redirect( add_query_arg( array( 'page' => 'grid_reuse_containers' ), admin_url( 'admin.php' ) ) );
+		if ( empty( $_POST ) ) {
+			return;
+		}
+		check_admin_referer( 'grid_delete_reuse_container_' . $containerid );
+		if ( true === $this->plugin->gridEditor->getReuseContainerEditor()->runDelete( $storage, $containerid ) ) {
+			wp_safe_redirect( $this->list_url() );
 			exit;
 		}
-		// the library's confirmation form has no nonce
-		echo str_replace( '</form>', wp_nonce_field( $action, '_wpnonce', true, false ) . '</form>', $html );
+	}
+
+	function delete_reuse_container() {
+		$containerid = isset( $_GET['containerid'] ) ? intval( $_GET['containerid'] ) : -1;
+		$html        = $this->plugin->gridEditor->getReuseContainerEditor()->runDelete( $this->plugin->gridCore->storage, $containerid );
+		grid_wp_render_reuse_delete_page( $html, __( 'Delete reusable container', 'grid' ), 'grid_delete_reuse_container', $containerid, $this->list_url() );
 	}
 }
