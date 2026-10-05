@@ -53,7 +53,7 @@ class ReuseBox extends _Component
 		grid_enqueue_editor_files($editor);
 		$html = $editor->runDelete( $this->plugin->gridCore->storage, $boxid );
 		if ( true === $html ) {
-			wp_redirect( add_query_arg( array( 'page' => 'grid_reuse_boxes' ), admin_url( 'tools.php' ) ) );
+			wp_redirect( add_query_arg( array( 'page' => 'grid_reuse_boxes' ), admin_url( 'admin.php' ) ) );
 			return;
 		}
 		echo $html;
