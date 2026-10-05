@@ -33,12 +33,15 @@ class Copy extends _Component {
 	 * @return string
 	 */
 	function getCopyActionUrl($post_id){
-		return add_query_arg(
-			array(
-				'action' => self::AJAX_ACTION_COPY,
-				self::AJAX_PARAM_POST_ID => $post_id
+		return wp_nonce_url(
+			add_query_arg(
+				array(
+					'action' => self::AJAX_ACTION_COPY,
+					self::AJAX_PARAM_POST_ID => $post_id
+				),
+				admin_url( 'admin-ajax.php' )
 			),
-			admin_url( 'admin-ajax.php' )
+			self::AJAX_ACTION_COPY . '_' . intval( $post_id )
 		);
 	}
 
@@ -59,7 +62,7 @@ class Copy extends _Component {
 			$temp              = array();
 			$temp['copy-grid'] = sprintf(
 				'<a href="%s">%s</a>',
-				$this->getCopyActionUrl($entity->ID),
+				esc_url( $this->getCopyActionUrl($entity->ID) ),
 				__( 'Copy Grid', Plugin::DOMAIN )
 			);
 			$actions           = array_merge( $temp, $actions );
@@ -75,7 +78,8 @@ class Copy extends _Component {
 
 		if(!current_user_can("edit_pages")) wp_die(__("You have no permission to copy a grid.", Plugin::DOMAIN));
 
-		$post_id = intval($_GET[self::AJAX_PARAM_POST_ID]);
+		$post_id = isset($_GET[self::AJAX_PARAM_POST_ID]) ? intval($_GET[self::AJAX_PARAM_POST_ID]) : 0;
+		check_admin_referer( self::AJAX_ACTION_COPY . '_' . $post_id );
 
 		if(!current_user_can("edit_page", $post_id)) wp_die(__("You have no permission to copy this grid.", Plugin::DOMAIN));
 		if(!$this->plugin->post->post_has_grid($post_id)) wp_die(__("This post has no grid to copy.", Plugin::DOMAIN));
