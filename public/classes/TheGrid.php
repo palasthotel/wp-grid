@@ -56,10 +56,10 @@ class TheGrid extends _Component {
 	}
 
 	function admin_menu(){
-		add_submenu_page( "", 'The Grid', 'The Grid', 'edit_posts', 'grid', array( $this, 'render_grid' ) );
-		add_submenu_page( "", 'Grid AJAX', 'The Grid AJAX', 'edit_posts', 'grid_ajax', array( $this, 'ajax' ) );
-		add_submenu_page( "", 'Grid CKEditor Config', 'Grid CKEditor Config', 'edit_posts', 'grid_ckeditor_config', array( $this, 'ckeditor_config' ) );
-		add_submenu_page( "", 'Grid Container slots CSS', 'Grid Conatiner slots CSS', 'edit_posts', 'grid_wp_container_slots_css', array( $this, 'container_slots_css' ) );
+		grid_wp_add_hidden_page( 'The Grid', 'The Grid', 'edit_posts', 'grid', array( $this, 'render_grid' ) );
+		grid_wp_add_hidden_page( 'Grid AJAX', 'The Grid AJAX', 'edit_posts', 'grid_ajax', array( $this, 'ajax' ) );
+		grid_wp_add_hidden_page( 'Grid CKEditor Config', 'Grid CKEditor Config', 'edit_posts', 'grid_ckeditor_config', array( $this, 'ckeditor_config' ) );
+		grid_wp_add_hidden_page( 'Grid Container slots CSS', 'Grid Conatiner slots CSS', 'edit_posts', 'grid_wp_container_slots_css', array( $this, 'container_slots_css' ) );
 	}
 
 	function render_grid() {

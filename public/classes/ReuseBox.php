@@ -16,8 +16,8 @@ class ReuseBox extends _Component
 	}
 	function admin_menu(){
 		add_submenu_page( 'grid_settings', 'Reusable boxes', 'Reusable boxes', 'edit_posts', 'grid_reuse_boxes', array( $this, 'render_reuse_boxes' ) );
-		add_submenu_page( '', 'edit reuse box', 'edit reuse box', 'edit_posts', 'grid_edit_reuse_box', array( $this, 'edit_reuse_box' ) );
-		add_submenu_page( '', 'delete reuse box', 'delete reuse box', 'edit_posts', 'grid_delete_reuse_box', array( $this, 'delete_reuse_box' ) );
+		grid_wp_add_hidden_page( 'edit reuse box', 'edit reuse box', 'edit_posts', 'grid_edit_reuse_box', array( $this, 'edit_reuse_box' ) );
+		grid_wp_add_hidden_page( 'delete reuse box', 'delete reuse box', 'edit_posts', 'grid_delete_reuse_box', array( $this, 'delete_reuse_box' ) );
 	}
 
 	function render_reuse_boxes() {

@@ -16,8 +16,8 @@ class ReuseContainer extends _Component
 	}
 	function admin_menu(){
 		add_submenu_page( 'grid_settings', 'reusable container', 'Reusable container', 'edit_posts', 'grid_reuse_containers', array( $this, 'reuse_containers' ) );
-		add_submenu_page( '', 'edit reuse container', 'edit reuse container', 'edit_posts', 'grid_edit_reuse_container', array( $this, 'edit_reuse_container' ) );
-		add_submenu_page( '', 'delete reuse container', 'delete reuse container', 'edit_posts', 'grid_delete_reuse_container', array( $this, 'delete_reuse_container') );
+		grid_wp_add_hidden_page( 'edit reuse container', 'edit reuse container', 'edit_posts', 'grid_edit_reuse_container', array( $this, 'edit_reuse_container' ) );
+		grid_wp_add_hidden_page( 'delete reuse container', 'delete reuse container', 'edit_posts', 'grid_delete_reuse_container', array( $this, 'delete_reuse_container') );
 	}
 	function reuse_containers() {
 		$storage = $this->plugin->gridCore->storage;
