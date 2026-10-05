@@ -1,17 +1,15 @@
 <?php
 /**
- * Plugin Name:       Grid - DEV
- * Description:       Dev inc file
- * Version:           X.X.X
- * Requires at least: X.X
- * Tested up to:      X.X.X
- * Author: Palasthotel <rezeption@palasthotel.de> (in person: Benjamin Birkenhake, Edward Bock, Enno Welbers, Jana Marie Eggebrecht, Stephan Kroppenstedt)
- * Author URI:        http://www.palasthotel.de
- * License:           GPL-2.0+
- * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       grid
- * Domain Path:       /plugin/languages
+ * Plugin Name: Grid - DEV
+ * Description: Development wrapper that loads public/; never shipped.
+ * Version: X.X.X
+ * Author: Palasthotel <webmaster@palasthotel.de>
+ * License: GPL-3.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
+ * Text Domain: grid
  */
+
+defined( 'ABSPATH' ) || exit;
 
 use Palasthotel\Grid\WordPress\Plugin;
 
