@@ -91,15 +91,55 @@ function grid_wp_reuse_delete_url( $page, $param, $id ) {
 }
 
 /**
+ * Marks the library's delete links in a list of reusable boxes or containers as
+ * destructive and gives them the element's title for the confirmation dialog.
+ *
+ * @param string $html   the library's list
+ * @param string $page   admin page that deletes
+ * @param string $param  query parameter with the id
+ * @param string[] $titles titles by id
+ *
+ * @return string
+ */
+function grid_wp_mark_reuse_delete_links( $html, $page, $param, $titles ) {
+	return preg_replace_callback(
+		'/<a\b([^>]*)>/',
+		function ( $match ) use ( $page, $param, $titles ) {
+			$attributes = $match[1];
+			if ( ! preg_match( '/\bhref=(["\'])(.*?)\1/', $attributes, $href ) ) {
+				return $match[0];
+			}
+			$query = array();
+			wp_parse_str( (string) wp_parse_url( html_entity_decode( $href[2] ), PHP_URL_QUERY ), $query );
+			if ( ! isset( $query['page'] ) || $query['page'] !== $page ) {
+				return $match[0];
+			}
+			if ( preg_match( '/\bclass=(["\'])(.*?)\1/', $attributes, $class ) ) {
+				$attributes = str_replace( $class[0], 'class="' . esc_attr( trim( $class[2] . ' button-link-delete' ) ) . '"', $attributes );
+			} else {
+				$attributes .= ' class="button-link-delete"';
+			}
+			$id = isset( $query[ $param ] ) ? intval( $query[ $param ] ) : -1;
+			if ( ! empty( $titles[ $id ] ) ) {
+				$attributes .= ' data-grid-title="' . esc_attr( $titles[ $id ] ) . '"';
+			}
+			return '<a' . $attributes . '>';
+		},
+		$html
+	);
+}
+
+/**
  * Asks before deleting from the list of reusable boxes or containers and then
  * posts the deletion; without JavaScript the link opens the confirmation page.
  *
  * @param string $page  admin page that deletes
  * @param string $param query parameter with the id
- * @param string $message
+ * @param string $message            question without a title
+ * @param string $message_with_title question with %s for the element's title
  */
-function grid_wp_print_reuse_delete_dialog( $page, $param, $message ) {
-	$config = wp_json_encode( array( 'page' => $page, 'param' => $param, 'message' => $message ) );
+function grid_wp_print_reuse_delete_dialog( $page, $param, $message, $message_with_title ) {
+	$config = wp_json_encode( array( 'page' => $page, 'param' => $param, 'message' => $message, 'messageWithTitle' => $message_with_title ) );
 	wp_print_inline_script_tag( <<<JS
 (function (config) {
 	document.addEventListener('click', function (event) {
@@ -108,7 +148,8 @@ function grid_wp_print_reuse_delete_dialog( $page, $param, $message ) {
 			return;
 		}
 		event.preventDefault();
-		if (!window.confirm(config.message)) {
+		var title = link.getAttribute('data-grid-title');
+		if (!window.confirm(title ? config.messageWithTitle.replace('%s', title) : config.message)) {
 			return;
 		}
 		var url = new URL(link.href);
@@ -139,8 +180,9 @@ JS
  * @param string $page  admin page that deletes
  * @param int $id
  * @param string $list_url
+ * @param string $element_title title of the box or container, if it has one
  */
-function grid_wp_render_reuse_delete_page( $html, $title, $page, $id, $list_url ) {
+function grid_wp_render_reuse_delete_page( $html, $title, $page, $id, $list_url, $element_title = '' ) {
 	$html = str_replace(
 		array( 'class="form-submit"', '</form>' ),
 		array(
@@ -151,7 +193,12 @@ function grid_wp_render_reuse_delete_page( $html, $title, $page, $id, $list_url 
 		$html
 	);
 	echo '<div class="wrap"><h1>' . esc_html( $title ) . '</h1>';
-	echo '<p>' . esc_html__( 'This deletes it for good.', 'grid' ) . '</p>';
+	if ( '' !== $element_title ) {
+		/* translators: %s: title of the reusable box or container */
+		echo '<p>' . esc_html( sprintf( __( '"%s" will be deleted for good.', 'grid' ), $element_title ) ) . '</p>';
+	} else {
+		echo '<p>' . esc_html__( 'This deletes it for good.', 'grid' ) . '</p>';
+	}
 	echo $html;
 	echo '</div>';
 }

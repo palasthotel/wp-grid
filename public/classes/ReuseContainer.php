@@ -27,13 +27,21 @@ class ReuseContainer extends _Component
 
 		$editor = $this->plugin->gridEditor->getReuseContainerEditor();
 		grid_enqueue_editor_files($editor);
+		$titles = array();
 		$html = $editor->run( $storage, function( $id ) {
 			return add_query_arg( array( 'page' => 'grid_edit_reuse_container', 'containerid' => $id ), admin_url( 'admin.php' ) );
-		}, function( $id ) {
+		}, function( $id ) use ( &$titles ) {
+			$titles[ $id ] = $this->reuse_title( $id );
 			return grid_wp_reuse_delete_url( 'grid_delete_reuse_container', 'containerid', $id );
 		} );
-		echo $html;
-		grid_wp_print_reuse_delete_dialog( 'grid_delete_reuse_container', 'containerid', __( 'Delete this reusable container for good?', 'grid' ) );
+		echo grid_wp_mark_reuse_delete_links( $html, 'grid_delete_reuse_container', 'containerid', $titles );
+		grid_wp_print_reuse_delete_dialog(
+			'grid_delete_reuse_container',
+			'containerid',
+			__( 'Delete this reusable container for good?', 'grid' ),
+			/* translators: %s: title of the reusable container */
+			__( 'Delete the reusable container "%s" for good?', 'grid' )
+		);
 	}
 	function edit_reuse_container() {
 		$containerid = intval($_GET['containerid']);
@@ -78,6 +86,16 @@ class ReuseContainer extends _Component
 	function delete_reuse_container() {
 		$containerid = isset( $_GET['containerid'] ) ? intval( $_GET['containerid'] ) : -1;
 		$html        = $this->plugin->gridEditor->getReuseContainerEditor()->runDelete( $this->plugin->gridCore->storage, $containerid );
-		grid_wp_render_reuse_delete_page( $html, __( 'Delete reusable container', 'grid' ), 'grid_delete_reuse_container', $containerid, $this->list_url() );
+		grid_wp_render_reuse_delete_page( $html, __( 'Delete reusable container', 'grid' ), 'grid_delete_reuse_container', $containerid, $this->list_url(), $this->reuse_title( $containerid ) );
+	}
+
+	/**
+	 * @param int $id
+	 *
+	 * @return string the reusable container's title, empty if it has none
+	 */
+	private function reuse_title( $id ) {
+		$element = $this->plugin->gridCore->storage->loadReuseContainer( $id );
+		return isset( $element->reusetitle ) ? (string) $element->reusetitle : '';
 	}
 }
