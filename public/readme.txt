@@ -5,7 +5,7 @@ Tags: landingpage, editor, admin, page, containerist, grid
 Requires at least: 6.1
 Requires PHP: 8.2
 Tested up to: 7.1.2
-Stable tag: 2.3.2
+Stable tag: 3.0.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -86,6 +86,29 @@ Grid works fine with a varnish configuration and the comet cache plugin. If you 
 2. Grid editor with Box list
 
 == Changelog ==
+
+= 3.0.0 =
+**⚠ BREAKING CHANGES**
+* **deps:** Grid needs PHP 8.2 and WordPress 6.1 or later.
+
+**Features**
+* find posts by the words of their title, in any order (42aa220)
+* show the post's status in the grid editor (2cd09aa)
+
+**Bug Fixes**
+* always list every grid right on the privileges screen (e78c26f)
+* ask in a dialog before deleting reusable boxes and containers (#136) (31bd933)
+* check a nonce on the privileges screen and the grid copy action (a01cb5c)
+* check the nonce and the post's edit permission in the editor endpoint (6903a37)
+* delete reusable boxes and containers again, after checking a nonce (da93847)
+* **deps:** get the grid library 3.0 through Composer (14e9f14)
+* give the hidden admin pages a title (dd5af64)
+* open the grid editor only for posts the user may edit (926bbfc)
+* render nothing for post boxes without a post (c2814a0)
+* save boxes and grids that contain emoji (e07993b)
+* search posts by title with any characters (d288db4)
+* send the privileges and reusable element screens to admin.php instead of tools.php (36a95ec)
+* show box errors in the front end only to people who can fix them (c5946ee)
 
 = 2.3.2 =
 

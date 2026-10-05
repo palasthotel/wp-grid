@@ -1,6 +1,6 @@
 {
 	"name": "@palasthotel/wp-grid",
-	"version": "2.3.2",
+	"version": "3.0.0",
 	"private": true,
 	"description": "Grid - a containerist landing page editor for WordPress",
 	"license": "GPL-3.0-or-later",
