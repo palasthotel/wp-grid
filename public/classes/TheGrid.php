@@ -56,10 +56,27 @@ class TheGrid extends _Component {
 	}
 
 	function admin_menu(){
-		grid_wp_add_hidden_page( 'The Grid', 'The Grid', 'edit_posts', 'grid', array( $this, 'render_grid' ) );
+		$hook = grid_wp_add_hidden_page( 'The Grid', 'The Grid', 'edit_posts', 'grid', array( $this, 'render_grid' ) );
+		if ( $hook ) {
+			add_action( 'load-' . $hook, array( $this, 'check_editor_access' ) );
+		}
 		grid_wp_add_hidden_page( 'Grid AJAX', 'The Grid AJAX', 'edit_posts', 'grid_ajax', array( $this, 'ajax' ) );
 		grid_wp_add_hidden_page( 'Grid CKEditor Config', 'Grid CKEditor Config', 'edit_posts', 'grid_ckeditor_config', array( $this, 'ckeditor_config' ) );
 		grid_wp_add_hidden_page( 'Grid Container slots CSS', 'Grid Conatiner slots CSS', 'edit_posts', 'grid_wp_container_slots_css', array( $this, 'container_slots_css' ) );
+	}
+
+	/**
+	 * Opening the editor creates the post's grid, so only someone who may edit the
+	 * post gets that far. Runs before the admin page starts its output.
+	 */
+	public function check_editor_access() {
+		$postid = isset( $_GET['postid'] ) ? intval( $_GET['postid'] ) : 0;
+		if ( 0 === $postid ) {
+			return;
+		}
+		if ( ! get_post( $postid ) || ! current_user_can( 'edit_post', $postid ) ) {
+			wp_die( esc_html__( 'Sorry, you are not allowed to edit this grid.', 'grid' ), '', array( 'response' => 403 ) );
+		}
 	}
 
 	function render_grid() {
@@ -76,7 +93,9 @@ class TheGrid extends _Component {
 			<?php
 			return;
 		}
-		
+
+		$post = get_post( $postid );
+
 		/**
 		 * look for grid id
 		 */
@@ -95,11 +114,9 @@ class TheGrid extends _Component {
 			$grid_id = $rows[0]->grid_id;
 		}
 
-		$post = get_post( $postid );
-
 		grid_enqueue_editor_files();
 
-		echo '<div class="wrap"><h2>'.$post->post_title.
+		echo '<div class="wrap"><h2>'.esc_html( $post->post_title ).
 			' <a title="Return to the post-edit page" class="add-new-h2"'.
 			' href="'.admin_url("post.php?post=$postid&action=edit").'" >'.__('Edit Post', Plugin::DOMAIN).'</a'.
 			'><a class="add-new-h2" href="'.

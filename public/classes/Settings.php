@@ -33,7 +33,10 @@ class Settings extends _Component
 		 */
 		global $wp_admin_bar;
 		global $post;
-		if ( isset( $post->grid ) || (is_admin() && isset($post->ID) && grid_wp_get_grid_by_postid($post->ID)  )) {
+		if ( ! isset( $post->ID ) || ! current_user_can( 'edit_post', $post->ID ) ) {
+			return;
+		}
+		if ( isset( $post->grid ) || ( is_admin() && grid_wp_get_grid_by_postid( $post->ID ) ) ) {
 			$wp_admin_bar->add_node( array(
 				'id' => 'grid_wp_thegrid',
 				'title' => __('Edit Grid', Plugin::DOMAIN),
