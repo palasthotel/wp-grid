@@ -12,6 +12,6 @@ if ( 'full' === $this->content->viewmode ) {
 	the_content();
 } elseif ( 'excerpt' === $this->content->viewmode ) {
 	the_excerpt();
-} else {
-?><p>Unsupported Viewmode: <?php echo $this->content->viewmode; ?></p><?php
+} elseif ( grid_wp_show_box_errors( $this ) ) {
+?><p>Unsupported Viewmode: <?php echo esc_html( $this->content->viewmode ); ?></p><?php
 } ?>

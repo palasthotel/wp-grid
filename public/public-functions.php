@@ -74,6 +74,31 @@ function grid_wp_load($post){
 }
 
 /**
+ * Whether the front end may show a box's error, e.g. a deleted box or an
+ * unsupported viewmode: while debugging, or to someone who may edit the grid's
+ * post and so fix it. Everybody else gets nothing.
+ *
+ * @param grid_box|null $box
+ *
+ * @return bool
+ */
+function grid_wp_show_box_errors( $box = null ) {
+	$post_id = 0;
+	if ( isset( $box->grid->gridid ) ) {
+		$post_id = intval( grid_wp_get_postid_by_grid( $box->grid->gridid ) );
+	}
+	if ( ! $post_id ) {
+		$post_id = get_queried_object_id();
+	}
+	$show = ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_DISPLAY' ) && WP_DEBUG_DISPLAY )
+		|| get_option( 'grid_debug_mode', false );
+	if ( ! $show && is_user_logged_in() ) {
+		$show = $post_id ? current_user_can( 'edit_post', $post_id ) : current_user_can( 'edit_posts' );
+	}
+	return (bool) apply_filters( 'grid_show_box_errors', $show, $box, $post_id );
+}
+
+/**
  * get grid privileges
  * @return mixed
  */
@@ -130,7 +155,7 @@ function grid_wp_load_js() {
  * @return mysqli
  */
 function grid_wp_get_mysqli() {
-	return grid_plugin()->gridQuery->connection;
+	return grid_plugin()->gridQuery->getConnection();
 }
 
 

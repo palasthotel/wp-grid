@@ -113,7 +113,7 @@ class Copy extends _Component {
 
 		// redirect to brand new grid copy
 		$url = $this->plugin->theGrid->getEditorUrl($new_post_id);
-		wp_redirect($url );
+		wp_safe_redirect( $url );
 		exit;
 	}
 
