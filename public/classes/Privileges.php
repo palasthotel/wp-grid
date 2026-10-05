@@ -31,18 +31,17 @@ class Privileges
 		global $wp_roles;
 		$names = $wp_roles->get_names();
 
-		$ajaxendpoint = new Ajax();
-		$rights = $ajaxendpoint->Rights();
+		// every right the editor knows; Ajax::Rights() would only list the current user's
+		$rights = ( new \Palasthotel\Grid\Endpoint() )->Rights();
 
 		if ( ! empty( $_POST ) ) {
-			$privileges = $_POST['privileges'];
-			foreach ( $privileges as $role => $privs ) {
-				foreach ( $privs as $key ) {
-					if ( 'on' == $privileges[ $role ][ $key ] ) {
-						$privileges[ $role ][ $key ] = true;
-					} else {
-						$privileges[ $role ][ $key ] = false;
-					}
+			check_admin_referer( 'grid_privileges' );
+			// only roles that exist and rights the editor knows, each one a boolean
+			$posted     = isset( $_POST['privileges'] ) && is_array( $_POST['privileges'] ) ? wp_unslash( $_POST['privileges'] ) : array();
+			$privileges = array();
+			foreach ( array_keys( $names ) as $role ) {
+				foreach ( $rights as $right ) {
+					$privileges[ $role ][ $right ] = isset( $posted[ $role ][ $right ] );
 				}
 			}
 			update_option( 'grid_privileges', $privileges );
@@ -54,13 +53,14 @@ class Privileges
 
 		?>
 		<form method="post" action="<?php echo add_query_arg( array( 'noheader' => true, 'page' => 'grid_privileges' ), admin_url( 'admin.php' ) );?>">
+			<?php wp_nonce_field( 'grid_privileges' ); ?>
 			<table cellspacing="0" cellpadding="0" class="grid-privileges-editor">
 				<tr>
 					<th>Role</th>
 					<?php
 					foreach ( $rights as $right ) {
 						?>
-						<th><?php echo $right; ?></th>
+						<th><?php echo esc_html( $right ); ?></th>
 						<?php
 					}
 					?>
@@ -69,15 +69,15 @@ class Privileges
 				foreach ( $names as $key => $name ) {
 					?>
 					<tr>
-						<td><?php echo $name ?></td>
+						<td><?php echo esc_html( translate_user_role( $name ) ); ?></td>
 						<?php
 						foreach ( $rights as $right ) {
 							$checked = '';
-							if ( $privileges[ $key ][ $right ] ) {
+							if ( ! empty( $privileges[ $key ][ $right ] ) ) {
 								$checked = 'checked';
 							}
 							?>
-							<td><input title="<?php echo $name.' can '.$right; ?>" type="checkbox" name="privileges[<?php echo $key;?>][<?php echo $right; ?>]" <?php echo $checked ?>></td>
+							<td><input title="<?php echo esc_attr( translate_user_role( $name ) . ' can ' . $right ); ?>" type="checkbox" name="privileges[<?php echo esc_attr( $key ); ?>][<?php echo esc_attr( $right ); ?>]" <?php echo $checked; ?>></td>
 							<?php
 						}
 						?>

@@ -12,6 +12,25 @@ function grid_plugin(){
 }
 
 /**
+ * Registers an admin page that has no menu entry, like the grid editor.
+ *
+ * WordPress looks a page's title up in its menu, so a page without a parent menu has none
+ * and admin-header.php passes null to strip_tags() - a deprecation notice on PHP 8.1+.
+ * Setting the title when the page loads avoids that.
+ *
+ * @return string|false the page's hook suffix
+ */
+function grid_wp_add_hidden_page( $page_title, $menu_title, $capability, $menu_slug, $callback ) {
+	$hook = add_submenu_page( '', $page_title, $menu_title, $capability, $menu_slug, $callback );
+	if ( $hook ) {
+		add_action( 'load-' . $hook, function () use ( $page_title ) {
+			$GLOBALS['title'] = $page_title;
+		} );
+	}
+	return $hook;
+}
+
+/**
  * drupal t function
  *
  */
