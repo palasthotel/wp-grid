@@ -41,6 +41,6 @@ if ( isset( $content ) && isset( $content->publish ) && 'publish' == $content->p
             <a href="<?php echo esc_url( $this->readmoreurl ); ?>" class="grid-box-readmore-link b-readmore-link"><?php echo $this->readmore; ?></a>
         <?php endif; ?>
     </div>
-<?php else : ?>
+<?php elseif ( grid_wp_show_box_errors( $this ) ) : ?>
     <p>No Content found or is not published yet!</p>
 <?php endif; ?>
