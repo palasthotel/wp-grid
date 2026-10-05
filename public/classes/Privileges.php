@@ -31,8 +31,8 @@ class Privileges
 		global $wp_roles;
 		$names = $wp_roles->get_names();
 
-		$ajaxendpoint = new Ajax();
-		$rights = $ajaxendpoint->Rights();
+		// every right the editor knows; Ajax::Rights() would only list the current user's
+		$rights = ( new \Palasthotel\Grid\Endpoint() )->Rights();
 
 		if ( ! empty( $_POST ) ) {
 			check_admin_referer( 'grid_privileges' );
