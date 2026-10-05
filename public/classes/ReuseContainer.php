@@ -53,7 +53,7 @@ class ReuseContainer extends _Component
 		grid_enqueue_editor_files( $editor );
 		$html = $editor->runDelete( $this->plugin->gridCore->storage, $containerid );
 		if ( true === $html ) {
-			wp_redirect( add_query_arg( array( 'page' => 'grid_reuse_containers' ), admin_url( 'tools.php' ) ) );
+			wp_redirect( add_query_arg( array( 'page' => 'grid_reuse_containers' ), admin_url( 'admin.php' ) ) );
 			return;
 		}
 		echo $html;
