@@ -47,15 +47,23 @@ class ReuseBox extends _Component
 	}
 
 	function delete_reuse_box() {
-		$boxid = intval($_GET['boxid']);
-		global $grid_lib;
-		$editor = $grid_lib->getReuseBoxEditor();
-		grid_enqueue_editor_files($editor);
-		$html = $editor->runDelete( $this->plugin->gridCore->storage, $boxid );
-		if ( true === $html ) {
-			wp_redirect( add_query_arg( array( 'page' => 'grid_reuse_boxes' ), admin_url( 'admin.php' ) ) );
-			return;
+		$boxid   = isset( $_GET['boxid'] ) ? intval( $_GET['boxid'] ) : -1;
+		$storage = $this->plugin->gridCore->storage;
+		$action  = 'grid_delete_reuse_box_' . $boxid;
+		if ( ! empty( $_POST ) ) {
+			check_admin_referer( $action );
 		}
-		echo $html;
+		if ( in_array( (string) $boxid, array_map( 'strval', $storage->getReusedBoxIds() ), true ) ) {
+			wp_die( esc_html__( 'This box is still in use.', 'grid' ), '', array( 'response' => 409, 'back_link' => true ) );
+		}
+		$editor = $this->plugin->gridEditor->getReuseBoxEditor();
+		grid_enqueue_editor_files($editor);
+		$html = $editor->runDelete( $storage, $boxid );
+		if ( true === $html ) {
+			wp_safe_redirect( add_query_arg( array( 'page' => 'grid_reuse_boxes' ), admin_url( 'admin.php' ) ) );
+			exit;
+		}
+		// the library's confirmation form has no nonce
+		echo str_replace( '</form>', wp_nonce_field( $action, '_wpnonce', true, false ) . '</form>', $html );
 	}
 }

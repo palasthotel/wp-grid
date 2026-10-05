@@ -48,14 +48,23 @@ class ReuseContainer extends _Component
 	}
 
 	function delete_reuse_container() {
-		$containerid = intval($_GET['containerid']);
-		$editor = $this->plugin->gridEditor->getReuseBoxEditor();
-		grid_enqueue_editor_files( $editor );
-		$html = $editor->runDelete( $this->plugin->gridCore->storage, $containerid );
-		if ( true === $html ) {
-			wp_redirect( add_query_arg( array( 'page' => 'grid_reuse_containers' ), admin_url( 'admin.php' ) ) );
-			return;
+		$containerid = isset( $_GET['containerid'] ) ? intval( $_GET['containerid'] ) : -1;
+		$storage     = $this->plugin->gridCore->storage;
+		$action      = 'grid_delete_reuse_container_' . $containerid;
+		if ( ! empty( $_POST ) ) {
+			check_admin_referer( $action );
 		}
-		echo $html;
+		if ( in_array( (string) $containerid, array_map( 'strval', $storage->getReusedContainerIds() ), true ) ) {
+			wp_die( esc_html__( 'This container is still in use.', 'grid' ), '', array( 'response' => 409, 'back_link' => true ) );
+		}
+		$editor = $this->plugin->gridEditor->getReuseContainerEditor();
+		grid_enqueue_editor_files( $editor );
+		$html = $editor->runDelete( $storage, $containerid );
+		if ( true === $html ) {
+			wp_safe_redirect( add_query_arg( array( 'page' => 'grid_reuse_containers' ), admin_url( 'admin.php' ) ) );
+			exit;
+		}
+		// the library's confirmation form has no nonce
+		echo str_replace( '</form>', wp_nonce_field( $action, '_wpnonce', true, false ) . '</form>', $html );
 	}
 }
