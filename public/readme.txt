@@ -2,7 +2,8 @@
 Contributors: edwardbock, mkernel, palasthotel
 Donate link: http://palasthotel.de/
 Tags: landingpage, editor, admin, page, containerist, grid
-Requires at least: 4.0
+Requires at least: 6.1
+Requires PHP: 8.2
 Tested up to: 5.9.3
 Stable tag: 2.3.2
 License: GPL-3.0-or-later

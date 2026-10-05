@@ -2,12 +2,29 @@
 	"name": "palasthotel/grid-wordpress",
 	"license": "GPL-3.0-or-later",
 	"description": "Grid plugin for wordpress",
+	"type": "wordpress-plugin",
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/palasthotel/grid"
+		}
+	],
+	"require": {
+		"php": ">=8.2",
+		"palasthotel/grid": "^3.0"
+	},
 	"autoload": {
 		"classmap": [
-          "classes"
+			"classes"
 		],
 		"psr-4": {
 			"Palasthotel\\Grid\\WordPress\\": "classes"
+		}
+	},
+	"config": {
+		"optimize-autoloader": true,
+		"platform": {
+			"php": "8.2"
 		}
 	}
 }
