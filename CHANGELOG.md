@@ -25,9 +25,6 @@
 * open the grid editor only for posts the user may edit ([926bbfc](https://github.com/palasthotel/wp-grid/commit/926bbfc26ca5a12e61729d61aab07f496ab9f4d6))
 * render nothing for post boxes without a post ([c2814a0](https://github.com/palasthotel/wp-grid/commit/c2814a0423da3db58e0f96d40e4ef6280e72bcf7))
 * save boxes and grids that contain emoji ([e07993b](https://github.com/palasthotel/wp-grid/commit/e07993ba2047265e193fe2568d1f1f155de8cfe9))
-* search posts by title with any characters ([c19900f](https://github.com/palasthotel/wp-grid/commit/c19900f4a2949b4e0f2f824d041efd7ff7018ef9))
 * search posts by title with any characters ([d288db4](https://github.com/palasthotel/wp-grid/commit/d288db4567699141e4fd8a89c574f717d2abda0d))
 * send the privileges and reusable element screens to admin.php instead of tools.php ([36a95ec](https://github.com/palasthotel/wp-grid/commit/36a95ec7690e46694152e4faf85eb2015e6eb396))
 * show box errors in the front end only to people who can fix them ([c5946ee](https://github.com/palasthotel/wp-grid/commit/c5946eea976157cbefaadd29952cb95f4d05925e))
-
-## Changelog

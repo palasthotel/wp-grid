@@ -106,7 +106,6 @@ Grid works fine with a varnish configuration and the comet cache plugin. If you 
 * open the grid editor only for posts the user may edit (926bbfc)
 * render nothing for post boxes without a post (c2814a0)
 * save boxes and grids that contain emoji (e07993b)
-* search posts by title with any characters (c19900f)
 * search posts by title with any characters (d288db4)
 * send the privileges and reusable element screens to admin.php instead of tools.php (36a95ec)
 * show box errors in the front end only to people who can fix them (c5946ee)
