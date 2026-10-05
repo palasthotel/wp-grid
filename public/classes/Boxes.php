@@ -61,7 +61,7 @@ class Boxes extends _Component
 	{
 		global $wpdb;
 		if ( $grid_title = $wp_query->get( 'grid_title' ) ) {
-			$where .= ' AND ' . $wpdb->posts . '.post_title LIKE \'%' . $wpdb->esc_like( $grid_title ) . '%\'';
+			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_title LIKE %s", '%' . $wpdb->esc_like( $grid_title ) . '%' );
 		}
 		return $where;
 	}
