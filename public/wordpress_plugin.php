@@ -1,16 +1,17 @@
 <?php
 /**
  * Plugin Name: Grid
- * Plugin URI: https://github.com/palasthotel/grid-wordpress
+ * Plugin URI: https://github.com/palasthotel/wp-grid
  * Description: Helps layouting pages with containerist.
  * Version: 2.3.2
- * Author: Palasthotel <rezeption@palasthotel.de> (in person: Benjamin Birkenhake, Edward Bock, Enno Welbers, Jana Marie Eggebrecht)
- * Author URI: http://www.palasthotel.de
+ * Author: Palasthotel <webmaster@palasthotel.de>
+ * Author URI: https://palasthotel.de
  * Text Domain: grid
  * Domain Path: /languages
  *
- * Requires at least: 4.0
- * Tested up to: 5.9.3
+ * Requires at least: 6.1
+ * Requires PHP: 8.2
+ * Tested up to: 7.1.2
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  *
@@ -36,7 +37,6 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-require_once dirname(__FILE__). "/lib/grid/vendor/autoload.php";
 require_once dirname( __FILE__ ) . "/vendor/autoload.php";
 
 class Plugin extends Component\Plugin {
@@ -125,7 +125,7 @@ class Plugin extends Component\Plugin {
 		$this->gridAPI      = new API($this->gridCore, $this->gridAjax, $this->gridTemplate);
 		$this->gridEditor   = new Editor(
 			$this->gridCore->storage,
-			$this->url."/lib/grid/",
+			$this->url."/vendor/palasthotel/grid/",
 			$this->gridHook
 		);
 
@@ -397,7 +397,7 @@ class Plugin extends Component\Plugin {
 		 * enqueue the css array
 		 */
 		foreach ( $css as $idx => $file ) {
-			wp_enqueue_style( 'grid_css_lib_' . $idx, plugins_url( 'lib/grid/' . $file, __FILE__ ) );
+			wp_enqueue_style( 'grid_css_lib_' . $idx, plugins_url( 'vendor/palasthotel/grid/' . $file, __FILE__ ) );
 		}
 		wp_enqueue_style( 'grid_wordpress_css', plugins_url( 'css/grid-wordpress.css', __FILE__ ) );
 		wp_enqueue_style( 'grid_wordpress_container_slots_css', add_query_arg( array(
@@ -422,9 +422,9 @@ class Plugin extends Component\Plugin {
 		foreach ( $js as $idx => $file ) {
 			wp_enqueue_script(
 				"grid_js_lib_$idx",
-				plugins_url( "lib/grid/$file", __FILE__ ),
+				plugins_url( "vendor/palasthotel/grid/$file", __FILE__ ),
 				[],
-				filemtime(plugin_dir_path(__FILE__)."/lib/grid/$file")
+				filemtime(plugin_dir_path(__FILE__)."vendor/palasthotel/grid/$file")
 			);
 		}
 

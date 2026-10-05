@@ -1,5 +1,14 @@
-*.DS_Store
-/build
+.DS_Store
+.idea
 node_modules
+
+# composer brings the grid library and the autoloader; npm run build fills them
+/public/vendor
+
+# pack.sh stages the payload here; the release rsyncs from it into SVN
+/build
 /grid.zip
+
+# wp-env
 .wp-env.json
+/.wp-env.override.json

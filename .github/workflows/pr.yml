@@ -1,0 +1,39 @@
+name: PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    uses: palasthotel/github-workflows/.github/workflows/wp-plugin-pr.yml@v1
+    with:
+      slug: grid
+      main-file: wordpress_plugin.php
+      dev-plugin-name: Grid - DEV
+      php-versions: '["8.2", "8.3", "8.4"]'
+      php-version: "8.2"
+      # composer brings the grid library, which the plugin builds itself
+      build-command: npm run build
+      exclude: |
+            /vendor/palasthotel/grid/src
+            /vendor/palasthotel/grid/tests
+            /vendor/palasthotel/grid/package.json
+            /vendor/palasthotel/grid/package-lock.json
+            /vendor/palasthotel/grid/webpack.*.js
+            /vendor/palasthotel/grid/phpunit.xml.dist
+            /vendor/palasthotel/grid/release-please-config.json
+            /vendor/palasthotel/grid/.nvmrc
+            /vendor/palasthotel/grid/js/dist/*.map
+      required-files: |
+        vendor/autoload.php
+        vendor/palasthotel/grid/js/dist/grid-editor.js
+        vendor/palasthotel/grid/js/dist/reuseContainerList.js
+        vendor/palasthotel/grid/css/grid-backend.css
+        vendor/simplepie/simplepie/src/SimplePie.php
+        grid-wordpress.js
+        css/grid-wordpress.css

@@ -1,9 +1,10 @@
 === Grid ===
-Contributors: edwardbock, mkernel, palasthotel
+Contributors: palasthotel, edwardbock, mkernel, janaeggebrecht
 Donate link: http://palasthotel.de/
 Tags: landingpage, editor, admin, page, containerist, grid
-Requires at least: 4.0
-Tested up to: 5.9.3
+Requires at least: 6.1
+Requires PHP: 8.2
+Tested up to: 7.1.2
 Stable tag: 2.3.2
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -11,8 +12,6 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Grid is a containerist landingpage editor.
 
 == Description ==
-
-This plugin is **no longer in active development**. Have a look at [BlockX](https://wordpress.org/plugin/blockx) for a similar editor and developer experience.
 
 What is Grid?
 

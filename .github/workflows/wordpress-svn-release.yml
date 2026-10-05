@@ -1,0 +1,38 @@
+name: Build and release to WordPress.org
+
+on:
+  push:
+    tags:
+      - "v*"
+  # Re-run a failed deploy from a branch that has the fix - see
+  # https://github.com/palasthotel/github-workflows/blob/main/docs/wp-plugin.md
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to deploy, without the leading v (e.g. 1.0.1)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    uses: palasthotel/github-workflows/.github/workflows/wp-plugin-svn-deploy.yml@v1
+    with:
+      slug: grid
+      main-file: wordpress_plugin.php
+      version: ${{ github.event.inputs.version }}
+      php-version: "8.2"
+      build-command: npm run build
+      exclude: |
+            /vendor/palasthotel/grid/src
+            /vendor/palasthotel/grid/tests
+            /vendor/palasthotel/grid/package.json
+            /vendor/palasthotel/grid/package-lock.json
+            /vendor/palasthotel/grid/webpack.*.js
+            /vendor/palasthotel/grid/phpunit.xml.dist
+            /vendor/palasthotel/grid/release-please-config.json
+            /vendor/palasthotel/grid/.nvmrc
+            /vendor/palasthotel/grid/js/dist/*.map
+    secrets: inherit

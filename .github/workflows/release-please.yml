@@ -1,0 +1,16 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  release-please:
+    uses: palasthotel/github-workflows/.github/workflows/wp-plugin-release-please.yml@v1
+    with:
+      app-id: ${{ vars.RELEASE_BOT_APP_ID }}
+    secrets: inherit
