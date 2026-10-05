@@ -61,7 +61,11 @@ class Boxes extends _Component
 	{
 		global $wpdb;
 		if ( $grid_title = $wp_query->get( 'grid_title' ) ) {
-			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_title LIKE %s", '%' . $wpdb->esc_like( $grid_title ) . '%' );
+			// every word has to be in the title, in any order
+			$words = preg_split( '/\s+/u', trim( $grid_title ), -1, PREG_SPLIT_NO_EMPTY );
+			foreach ( $words as $word ) {
+				$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_title LIKE %s", '%' . $wpdb->esc_like( $word ) . '%' );
+			}
 		}
 		return $where;
 	}

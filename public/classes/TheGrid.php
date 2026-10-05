@@ -116,11 +116,18 @@ class TheGrid extends _Component {
 
 		grid_enqueue_editor_files();
 
-		echo '<div class="wrap"><h2>'.esc_html( $post->post_title ).
+		// a published grid of an unpublished post stays invisible, so say so
+		$post_state = '';
+		$status     = get_post_status_object( get_post_status( $post ) );
+		if ( $status && 'publish' !== $status->name ) {
+			$post_state = ' <span class="post-state">&mdash; ' . esc_html( $status->label ) . '</span>';
+		}
+
+		echo '<div class="wrap"><h2>'.esc_html( $post->post_title ).$post_state.
 			' <a title="Return to the post-edit page" class="add-new-h2"'.
-			' href="'.admin_url("post.php?post=$postid&action=edit").'" >'.__('Edit Post', Plugin::DOMAIN).'</a'.
+			' href="'.esc_url( admin_url( "post.php?post=$postid&action=edit" ) ).'" >'.__('Edit Post', Plugin::DOMAIN).'</a'.
 			'><a class="add-new-h2" href="'.
-			get_permalink( $postid ).'">'.__('View Grid', Plugin::DOMAIN).'</a></h2> </div>';
+			esc_url( get_permalink( $postid ) ).'">'.__('View Grid', Plugin::DOMAIN).'</a></h2> </div>';
 
 		/**
 		 * async parameters
