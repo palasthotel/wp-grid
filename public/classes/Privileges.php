@@ -45,14 +45,14 @@ class Privileges
 				}
 			}
 			update_option( 'grid_privileges', $privileges );
-			wp_redirect( add_query_arg( array( 'page' => 'grid_privileges' ), admin_url( 'admin.php' ) ) );
-			return;
+			wp_safe_redirect( add_query_arg( array( 'page' => 'grid_privileges' ), admin_url( 'admin.php' ) ) );
+			exit;
 		}
 		$privileges = grid_wp_get_privs();
 		wp_enqueue_style( 'grid_css_wordpress', $this->plugin->url. 'css/grid-wordpress.css' );
 
 		?>
-		<form method="post" action="<?php echo add_query_arg( array( 'noheader' => true, 'page' => 'grid_privileges' ), admin_url( 'admin.php' ) );?>">
+		<form method="post" action="<?php echo esc_url( add_query_arg( array( 'noheader' => true, 'page' => 'grid_privileges' ), admin_url( 'admin.php' ) ) ); ?>">
 			<?php wp_nonce_field( 'grid_privileges' ); ?>
 			<table cellspacing="0" cellpadding="0" class="grid-privileges-editor">
 				<tr>
