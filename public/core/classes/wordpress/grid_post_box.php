@@ -33,15 +33,17 @@ class grid_post_box extends grid_box {
 	* @return string
 	*/
 	public function build( $editmode ) {
-		$post = get_post( $this->content->postid ); // Returns post id or FALSE
-		if ( $post == false ) {
+		// without a post id get_post() would return the current post
+		$post_id = isset( $this->content->postid ) ? intval( $this->content->postid ) : 0;
+		$post = $post_id > 0 ? get_post( $post_id ) : null;
+		if ( ! $post ) {
 			return 'Post is lost';
 		}
 		if ( $editmode ) {
 			return $post->post_type.': '.$post->post_title.' ('.$post->post_date.' - '.$post->post_status.')';
 		} else {
 			$query = new WP_Query( array(
-				'p' => $this->content->postid,
+				'p' => $post_id,
 				'post_type' => 'any',
 			) );
 			if ( $query->have_posts() ) {
@@ -54,6 +56,9 @@ class grid_post_box extends grid_box {
 					grid_avoid_doublets_add(get_the_ID(), $this->grid->gridid);
 				}
 				
+				// templates expect a viewmode, boxes saved without one get the default
+				$this->content->viewmode = $this->getViewmode();
+
 				ob_start();
 				$path = $this->template->getPath('post_content.tpl.php');
 				include $path ? $path : dirname( __FILE__ ) . '/../../templates/wordpress/post_content.tpl.php';
