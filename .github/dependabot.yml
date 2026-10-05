@@ -1,0 +1,28 @@
+---
+version: 2
+
+updates:
+  # the grid library and SimplePie ship with the plugin, so their updates are fixes
+  - package-ecosystem: "composer"
+    directory: "/public"
+    commit-message:
+      prefix: "fix(deps)"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    commit-message:
+      prefix: "ci"
+    groups:
+      github-actions:
+        patterns: ["*"]
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Europe/Berlin"

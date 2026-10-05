@@ -1,0 +1,20 @@
+{
+	"name": "@palasthotel/wp-grid",
+	"version": "2.3.2",
+	"private": true,
+	"description": "Grid - a containerist landing page editor for WordPress",
+	"license": "GPL-3.0-or-later",
+	"author": {
+		"name": "Palasthotel",
+		"email": "webmaster@palasthotel.de",
+		"url": "https://palasthotel.de"
+	},
+	"repository": "git+https://github.com/palasthotel/wp-grid.git",
+	"bugs": {
+		"url": "https://github.com/palasthotel/wp-grid/issues"
+	},
+	"scripts": {
+		"build": "cd public && composer install --no-dev --no-interaction --prefer-dist && cd vendor/palasthotel/grid && npm ci --no-audit --no-fund && npm run build && rm -rf node_modules",
+		"pack": "SLUG=grid bash ../github-workflows/wp-plugin/bin/pack.sh"
+	}
+}
