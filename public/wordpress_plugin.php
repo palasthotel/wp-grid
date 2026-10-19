@@ -3,7 +3,7 @@
  * Plugin Name: Grid Landing Page Editor
  * Plugin URI: https://github.com/palasthotel/wp-grid
  * Description: Helps layouting pages with containerist.
- * Version: 3.0.1
+ * Version: 3.0.2
  * Author: Palasthotel <webmaster@palasthotel.de>
  * Author URI: https://palasthotel.de
  * Text Domain: grid

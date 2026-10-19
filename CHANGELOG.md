@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.2](https://github.com/palasthotel/wp-grid/compare/v3.0.1...v3.0.2) (2026-10-14)
+
+
+### Bug Fixes
+
+* filter grid content from users who may not post unfiltered HTML ([87de783](https://github.com/palasthotel/wp-grid/commit/87de7833d9f75e7b582a17b8de94623ed6443c12))
+
 ## [3.0.1](https://github.com/palasthotel/wp-grid/compare/v3.0.0...v3.0.1) (2026-10-12)
 
 

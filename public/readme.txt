@@ -5,7 +5,7 @@ Tags: landingpage, editor, page, containerist, grid
 Requires at least: 6.1
 Requires PHP: 8.2
 Tested up to: 7.1
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -86,6 +86,10 @@ Grid works fine with a varnish configuration and the comet cache plugin. If you 
 2. Grid editor with Box list
 
 == Changelog ==
+
+= 3.0.2 =
+**Bug Fixes**
+* filter grid content from users who may not post unfiltered HTML (87de783)
 
 = 3.0.1 =
 **Bug Fixes**
