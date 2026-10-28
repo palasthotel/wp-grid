@@ -1,0 +1,51 @@
+name: SBOM
+
+on:
+  push:
+    tags:
+      - "v*"
+  # The SBOM of a version released before this workflow existed - see
+  # https://github.com/palasthotel/github-workflows/blob/main/docs/sbom.md
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Released version, without the leading v (e.g. 1.0.1)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    uses: palasthotel/github-workflows/.github/workflows/wp-plugin-sbom.yml@main
+    permissions:
+      contents: write
+    with:
+      slug: grid
+      main-file: wordpress_plugin.php
+      version: ${{ github.event.inputs.version }}
+      php-version: "8.2"
+      build-command: npm run build
+      exclude: |
+            /vendor/palasthotel/grid/src
+            /vendor/palasthotel/grid/tests
+            /vendor/palasthotel/grid/package.json
+            /vendor/palasthotel/grid/package-lock.json
+            /vendor/palasthotel/grid/webpack.*.js
+            /vendor/palasthotel/grid/phpunit.xml.dist
+            /vendor/palasthotel/grid/release-please-config.json
+            /vendor/palasthotel/grid/.nvmrc
+            /vendor/palasthotel/grid/js/dist/*.map
+      tools-ref: main
+
+  dependency-track:
+    needs: sbom
+    if: needs.sbom.outputs.sboms != ''
+    uses: palasthotel/github-workflows/.github/workflows/dependency-track-upload.yml@main
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      version: ${{ needs.sbom.outputs.version }}
+      tools-ref: main
